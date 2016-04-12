@@ -28,7 +28,7 @@ module.exports = function (gruntOrShipit) {
     .then(createReleasePath)
     .then(initRepository)
     .then(addRemote)
-    .then(fetch)
+    .then(pull)
     .then(setCurrentRevision)
     .then(function () {
       shipit.emit('updated');
@@ -92,16 +92,13 @@ module.exports = function (gruntOrShipit) {
      * Fetch repository.
      */
 
-    function fetch() {
-      var fetchCommand = 'git fetch' +
-        (shipit.config.shallowClone ? ' --depth=1 ' : ' ') +
-        'shipit --prune';
+    function pull() {
+      var fetchCommand = 'git pull shipit master';
 
-      shipit.log('Fetching repository "%s"', shipit.config.repositoryUrl);
+      shipit.log('Pulling repository "%s"', shipit.config.repositoryUrl);
 
       return shipit.remote(
-        'cd ' + shipit.releasePath + ' && ' +
-        fetchCommand
+        'cd ' + shipit.releasePath + ' && ' + fetchCommand
       ).then(function () {
         shipit.log(chalk.green('Repository fetched.'));
       });
@@ -150,8 +147,8 @@ module.exports = function (gruntOrShipit) {
     function setCurrentRevision() {
       shipit.log('Setting current revision and creating revision file.');
 
-      return shipit.local('git rev-parse ' + shipit.config.branch, {cwd: shipit.config.workspace}).then(function(response) {
-        shipit.currentRevision = response.stdout.trim();
+      return shipit.remote('cd ' + shipit.releasePath + ' && git rev-parse ' + shipit.config.branch).then(function(response) {
+        shipit.currentRevision = response[0].stdout.trim();
         return shipit.remote('echo "' + shipit.currentRevision + '" > ' + path.join(shipit.releasePath, 'REVISION'));
       }).then(function() {
         shipit.log(chalk.green('Revision file created.'));
