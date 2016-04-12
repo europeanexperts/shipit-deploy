@@ -26,7 +26,9 @@ module.exports = function (gruntOrShipit) {
     return setPreviousRelease()
     .then(setPreviousRevision)
     .then(createReleasePath)
-    .then(remoteCopy)
+    .then(initRepository)
+    .then(addRemote)
+    .then(fetch)
     .then(setCurrentRevision)
     .then(function () {
       shipit.emit('updated');
@@ -61,16 +63,47 @@ module.exports = function (gruntOrShipit) {
     }
 
     /**
-     * Remote copy project.
+     * Initialize repository.
      */
 
-    function remoteCopy() {
-      var uploadDirPath = path.resolve(shipit.config.workspace, shipit.config.dirToCopy || '');
-
-      shipit.log('Copy project to remote servers.');
-      return shipit.remoteCopy(uploadDirPath + '/', shipit.releasePath, {rsync: '--del'})
+    function initRepository() {
+      shipit.log('Initialize repository in "%s"', sshipit.releasePath);
+      return shipit.remmote('cd ' + shipit.releasePath + ' && git init')
       .then(function () {
-        shipit.log(chalk.green('Finished copy.'));
+        shipit.log(chalk.green('Repository initialized.'));
+      });
+    }
+
+    /**
+     * Add remote.
+     */
+
+    function addRemote() {
+      shipit.log('List local remotes.');
+      return shipit.remote(
+        'cd ' + shipit.releasePath + ' && git remote add shipit ' + shipit.config.repositoryUrl,
+        {cwd: shipit.config.workspace}
+      ).then(function () {
+        shipit.log(chalk.green('Remote updated.'));
+      });
+    }
+
+    /**
+     * Fetch repository.
+     */
+
+    function fetch() {
+      var fetchCommand = 'git fetch' +
+        (shipit.config.shallowClone ? ' --depth=1 ' : ' ') +
+        'shipit --prune';
+
+      shipit.log('Fetching repository "%s"', shipit.config.repositoryUrl);
+
+      return shipit.remote(
+        'cd ' + shipit.releasePath + ' && ' +
+        fetchCommand
+      ).then(function () {
+        shipit.log(chalk.green('Repository fetched.'));
       });
     }
 

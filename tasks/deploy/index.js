@@ -19,7 +19,6 @@ module.exports = function (gruntOrShipit) {
 
   utils.registerTask(gruntOrShipit, 'deploy', [
     'deploy:init',
-    'deploy:fetch',
     'deploy:update',
     'deploy:publish',
     'deploy:clean',
