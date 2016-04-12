@@ -26,7 +26,6 @@ module.exports = function (gruntOrShipit) {
     return setPreviousRelease()
     .then(setPreviousRevision)
     .then(createReleasePath)
-    .then(copyPreviousRelease)
     .then(remoteCopy)
     .then(setCurrentRevision)
     .then(function () {
