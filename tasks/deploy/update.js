@@ -68,7 +68,7 @@ module.exports = function (gruntOrShipit) {
 
     function initRepository() {
       shipit.log('Initialize repository in "%s"', shipit.releasePath);
-      return shipit.remmote('cd ' + shipit.releasePath + ' && git init')
+      return shipit.remote('cd ' + shipit.releasePath + ' && git init')
       .then(function () {
         shipit.log(chalk.green('Repository initialized.'));
       });
