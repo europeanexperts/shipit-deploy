@@ -81,8 +81,7 @@ module.exports = function (gruntOrShipit) {
     function addRemote() {
       shipit.log('List local remotes.');
       return shipit.remote(
-        'cd ' + shipit.releasePath + ' && git remote add shipit ' + shipit.config.repositoryUrl,
-        {cwd: shipit.config.workspace}
+        'cd ' + shipit.releasePath + ' && git remote add shipit ' + shipit.config.repositoryUrl
       ).then(function () {
         shipit.log(chalk.green('Remote updated.'));
       });
