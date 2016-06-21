@@ -28,7 +28,8 @@ module.exports = function (gruntOrShipit) {
     .then(createReleasePath)
     .then(initRepository)
     .then(addRemote)
-    .then(pull)
+    .then(fetch)
+    .then(checkout)
     .then(setCurrentRevision)
     .then(function () {
       shipit.emit('updated');
@@ -52,7 +53,7 @@ module.exports = function (gruntOrShipit) {
      */
 
     function createReleasePath() {
-      shipit.releaseDirname = moment.utc().format('YYYYMMDDHHmmss');
+      shipit.releaseDirname = moment.utc().format('YYYY.MM.DD_HH.mm.ss');
       shipit.releasePath = path.join(shipit.releasesPath, shipit.releaseDirname);
 
       shipit.log('Create release path "%s"', shipit.releasePath);
@@ -91,15 +92,33 @@ module.exports = function (gruntOrShipit) {
      * Fetch repository.
      */
 
-    function pull() {
-      var fetchCommand = 'git pull shipit master';
+    function fetch() {
+      var branch = shipit.config.branch;
+      var fetchCommand = 'git fetch shipit ' + branch;
 
-      shipit.log('Pulling repository "%s"', shipit.config.repositoryUrl);
+      shipit.log('Fetching repository "%s", branch "%s"', shipit.config.repositoryUrl, branch);
 
       return shipit.remote(
         'cd ' + shipit.releasePath + ' && ' + fetchCommand
       ).then(function () {
         shipit.log(chalk.green('Repository fetched.'));
+      });
+    }
+
+    /**
+     * Checkout branch
+     */
+
+    function checkout() {
+      var branch = shipit.config.branch;
+      var checkout = 'git checkout ' + branch;
+
+      shipit.log('Checking out "%s"', branch);
+
+      return shipit.remote(
+        'cd ' + shipit.releasePath + ' && ' + checkout
+      ).then(function () {
+        shipit.log(chalk.green('Bracnhed checked out.'));
       });
     }
 
